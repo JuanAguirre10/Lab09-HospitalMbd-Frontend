@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import api from '../services/api';
+import axios from 'axios';
 
 const AuthContext = createContext();
 
@@ -10,20 +10,37 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
-            setUser(JSON.parse(storedUser));
+            try {
+                setUser(JSON.parse(storedUser));
+            } catch (error) {
+                localStorage.removeItem('user');
+            }
         }
     }, []);
 
     const login = async (username, password) => {
         setLoading(true);
         try {
-            const response = await api.post('/usuarios/login', { username, password });
-            const userData = response.data;
+            const response = await axios.post('http://localhost:8080/api/usuarios/login', {
+                nombreUsuario: username,
+                contrasena: password
+            });
+            
+            const userData = {
+                id: response.data.id,
+                username: response.data.nombreUsuario,
+                rol: response.data.rol
+            };
+            
             setUser(userData);
             localStorage.setItem('user', JSON.stringify(userData));
             return { success: true };
         } catch (error) {
-            return { success: false, error: error.response?.data?.error };
+            console.error('Login error:', error);
+            return { 
+                success: false, 
+                error: error.response?.data?.error || 'Credenciales incorrectas'
+            };
         } finally {
             setLoading(false);
         }

@@ -9,9 +9,16 @@ const api = axios.create({
 
 api.interceptors.request.use(
     (config) => {
-        const user = JSON.parse(localStorage.getItem('user'));
-        if (user && user.token) {
-            config.headers.Authorization = `Bearer ${user.token}`;
+        const user = localStorage.getItem('user');
+        if (user) {
+            try {
+                const userData = JSON.parse(user);
+                if (userData && userData.token) {
+                    config.headers.Authorization = `Bearer ${userData.token}`;
+                }
+            } catch (error) {
+                console.error('Error parsing user data:', error);
+            }
         }
         return config;
     },

@@ -34,8 +34,8 @@ const Navbar = ({ onMenuClick }) => {
                     <MenuIcon />
                 </IconButton>
                 
-                <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-                    Sistema de Gestión Hospitalaria
+                <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, fontWeight: 700 }}>
+                    Tecsup Health - Sistema Hospitalario
                 </Typography>
 
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
