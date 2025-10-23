@@ -10,6 +10,7 @@ import CitasPage from './pages/CitasPage';
 import ConsultasPage from './pages/ConsultasPage';
 import HospitalizacionPage from './pages/HospitalizacionPage';
 import FacturacionPage from './pages/FacturacionPage';
+import UsuariosPage from './pages/UsuariosPage';
 import NotFound from './pages/NotFound';
 
 function App() {
@@ -58,6 +59,12 @@ function App() {
           <Route path="/facturacion" element={
             <PrivateRoute>
               <FacturacionPage />
+            </PrivateRoute>
+          } />
+
+          <Route path="/usuarios" element={
+            <PrivateRoute>
+              <UsuariosPage />
             </PrivateRoute>
           } />
 
