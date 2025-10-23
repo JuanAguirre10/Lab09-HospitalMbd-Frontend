@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext';
 import PrivateRoute from './utils/PrivateRoute';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import PacientesPage from './pages/PacientesPage';
 import NotFound from './pages/NotFound';
 
 function App() {
@@ -16,6 +17,12 @@ function App() {
           <Route path="/dashboard" element={
             <PrivateRoute>
               <Dashboard />
+            </PrivateRoute>
+          } />
+
+          <Route path="/pacientes" element={
+            <PrivateRoute>
+              <PacientesPage />
             </PrivateRoute>
           } />
 
