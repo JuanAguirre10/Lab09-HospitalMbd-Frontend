@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Dialog,
     DialogTitle,
@@ -12,7 +12,9 @@ import {
     IconButton,
     Paper,
 } from '@mui/material';
-import { Close, CalendarMonth, AccessTime, Person, LocalHospital, Description, EventNote } from '@mui/icons-material';
+import { Close, Person, LocalHospital, CalendarMonth, AccessTime, Description, Notes } from '@mui/icons-material';
+import { getPacienteById } from '../../services/pacienteService';
+import { getMedicoById } from '../../services/medicoService';
 
 const DetailItem = ({ icon: Icon, label, value, color = 'primary' }) => (
     <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
@@ -41,7 +43,40 @@ const DetailItem = ({ icon: Icon, label, value, color = 'primary' }) => (
 );
 
 const ConsultaDetail = ({ open, onClose, consulta }) => {
+    const [paciente, setPaciente] = useState(null);
+    const [medico, setMedico] = useState(null);
+
+    useEffect(() => {
+        if (consulta && open) {
+            loadData();
+        }
+    }, [consulta, open]);
+
+    const loadData = async () => {
+        if (!consulta) return;
+        
+        try {
+            const [pacienteRes, medicoRes] = await Promise.all([
+                getPacienteById(consulta.idPaciente).catch(() => null),
+                getMedicoById(consulta.idMedico).catch(() => null),
+            ]);
+            
+            setPaciente(pacienteRes?.data);
+            setMedico(medicoRes?.data);
+        } catch (error) {
+            console.error('Error cargando datos:', error);
+        }
+    };
+
     if (!consulta) return null;
+
+    const nombrePaciente = paciente 
+        ? `${paciente.nombres} ${paciente.apellidos}` 
+        : consulta.nombrePaciente || consulta.idPaciente;
+
+    const nombreMedico = medico 
+        ? `Dr(a). ${medico.nombres} ${medico.apellidos}` 
+        : consulta.nombreMedico || consulta.idMedico;
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -74,7 +109,7 @@ const ConsultaDetail = ({ open, onClose, consulta }) => {
                         <DetailItem
                             icon={Person}
                             label="PACIENTE"
-                            value={consulta.idPaciente}
+                            value={nombrePaciente}
                             color="primary"
                         />
                     </Grid>
@@ -83,7 +118,7 @@ const ConsultaDetail = ({ open, onClose, consulta }) => {
                         <DetailItem
                             icon={LocalHospital}
                             label="MÉDICO"
-                            value={consulta.idMedico}
+                            value={nombreMedico}
                             color="secondary"
                         />
                     </Grid>
@@ -106,30 +141,21 @@ const ConsultaDetail = ({ open, onClose, consulta }) => {
                         />
                     </Grid>
 
-                    <Grid item xs={12} md={6}>
+                    <Grid item xs={12}>
                         <DetailItem
-                            icon={EventNote}
-                            label="CITA RELACIONADA"
-                            value={consulta.idCita}
+                            icon={Description}
+                            label="MOTIVO DE CONSULTA"
+                            value={consulta.motivoConsulta}
                             color="success"
                         />
                     </Grid>
 
                     <Grid item xs={12}>
                         <DetailItem
-                            icon={Description}
-                            label="MOTIVO DE CONSULTA"
-                            value={consulta.motivoConsulta}
-                            color="primary"
-                        />
-                    </Grid>
-
-                    <Grid item xs={12}>
-                        <DetailItem
-                            icon={Description}
+                            icon={Notes}
                             label="OBSERVACIONES"
                             value={consulta.observaciones}
-                            color="secondary"
+                            color="error"
                         />
                     </Grid>
                 </Grid>

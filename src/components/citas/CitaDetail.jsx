@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Dialog,
     DialogTitle,
@@ -8,25 +8,14 @@ import {
     Box,
     Typography,
     Divider,
-    Chip,
     Grid,
     IconButton,
     Paper,
+    Chip,
 } from '@mui/material';
-import { Close, CalendarMonth, AccessTime, Person, LocalHospital, Description } from '@mui/icons-material';
-
-const getEstadoColor = (estado) => {
-    switch (estado) {
-        case 'programada':
-            return 'info';
-        case 'atendida':
-            return 'success';
-        case 'cancelada':
-            return 'error';
-        default:
-            return 'default';
-    }
-};
+import { Close, Person, LocalHospital, CalendarMonth, AccessTime, Description } from '@mui/icons-material';
+import { getPacienteById } from '../../services/pacienteService';
+import { getMedicoById } from '../../services/medicoService';
 
 const DetailItem = ({ icon: Icon, label, value, color = 'primary' }) => (
     <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
@@ -54,8 +43,58 @@ const DetailItem = ({ icon: Icon, label, value, color = 'primary' }) => (
     </Box>
 );
 
+const getEstadoColor = (estado) => {
+    switch (estado) {
+        case 'programada':
+            return 'info';
+        case 'atendida':
+            return 'success';
+        case 'cancelada':
+            return 'error';
+        default:
+            return 'default';
+    }
+};
+
 const CitaDetail = ({ open, onClose, cita }) => {
+    const [paciente, setPaciente] = useState(null);
+    const [medico, setMedico] = useState(null);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (cita && open) {
+            loadData();
+        }
+    }, [cita, open]);
+
+    const loadData = async () => {
+        if (!cita) return;
+        
+        setLoading(true);
+        try {
+            const [pacienteRes, medicoRes] = await Promise.all([
+                getPacienteById(cita.idPaciente).catch(() => null),
+                getMedicoById(cita.idMedico).catch(() => null),
+            ]);
+            
+            setPaciente(pacienteRes?.data);
+            setMedico(medicoRes?.data);
+        } catch (error) {
+            console.error('Error cargando datos:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     if (!cita) return null;
+
+    const nombrePaciente = paciente 
+        ? `${paciente.nombres} ${paciente.apellidos}` 
+        : cita.nombrePaciente || cita.idPaciente;
+
+    const nombreMedico = medico 
+        ? `Dr(a). ${medico.nombres} ${medico.apellidos}` 
+        : cita.nombreMedico || cita.idMedico;
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -85,7 +124,7 @@ const CitaDetail = ({ open, onClose, cita }) => {
                                 {cita.fecha} - {cita.hora}
                             </Typography>
                             <Typography variant="body1" color="text.secondary">
-                                Cita Médica Programada
+                                Cita Médica {cita.estado}
                             </Typography>
                         </Box>
                     </Box>
@@ -96,7 +135,7 @@ const CitaDetail = ({ open, onClose, cita }) => {
                         <DetailItem
                             icon={Person}
                             label="PACIENTE"
-                            value={cita.idPaciente}
+                            value={nombrePaciente}
                             color="primary"
                         />
                     </Grid>
@@ -105,7 +144,7 @@ const CitaDetail = ({ open, onClose, cita }) => {
                         <DetailItem
                             icon={LocalHospital}
                             label="MÉDICO"
-                            value={cita.idMedico}
+                            value={nombreMedico}
                             color="secondary"
                         />
                     </Grid>

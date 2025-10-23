@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Dialog,
     DialogTitle,
@@ -13,20 +13,8 @@ import {
     IconButton,
     Paper,
 } from '@mui/material';
-import { Close, Receipt, Person, CalendarMonth, AttachMoney, Payment, Description } from '@mui/icons-material';
-
-const getEstadoColor = (estado) => {
-    switch (estado) {
-        case 'pendiente':
-            return 'warning';
-        case 'pagada':
-            return 'success';
-        case 'anulada':
-            return 'error';
-        default:
-            return 'default';
-    }
-};
+import { Close, Receipt, Person, CalendarMonth, AttachMoney, CreditCard } from '@mui/icons-material';
+import { getPacienteById } from '../../services/pacienteService';
 
 const DetailItem = ({ icon: Icon, label, value, color = 'primary' }) => (
     <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
@@ -54,15 +42,53 @@ const DetailItem = ({ icon: Icon, label, value, color = 'primary' }) => (
     </Box>
 );
 
+const getEstadoColor = (estado) => {
+    switch (estado?.toLowerCase()) {
+        case 'pendiente':
+            return 'warning';
+        case 'pagada':
+        case 'pagado':
+            return 'success';
+        case 'anulada':
+        case 'anulado':
+            return 'error';
+        default:
+            return 'default';
+    }
+};
+
 const FacturaDetail = ({ open, onClose, factura }) => {
+    const [paciente, setPaciente] = useState(null);
+
+    useEffect(() => {
+        if (factura && open) {
+            loadData();
+        }
+    }, [factura, open]);
+
+    const loadData = async () => {
+        if (!factura) return;
+        
+        try {
+            const pacienteRes = await getPacienteById(factura.idPaciente).catch(() => null);
+            setPaciente(pacienteRes?.data);
+        } catch (error) {
+            console.error('Error cargando datos:', error);
+        }
+    };
+
     if (!factura) return null;
+
+    const nombrePaciente = paciente 
+        ? `${paciente.nombres} ${paciente.apellidos}` 
+        : factura.nombrePaciente || factura.idPaciente;
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
             <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                        Detalle de la Factura
+                        Detalle de Factura
                     </Typography>
                     <Chip
                         label={factura.estado}
@@ -84,26 +110,17 @@ const FacturaDetail = ({ open, onClose, factura }) => {
                             <Typography variant="h5" sx={{ fontWeight: 700 }}>
                                 Factura N° {factura.numeroFactura}
                             </Typography>
-                            <Typography variant="body1" color="text.secondary">
-                                Fecha: {factura.fecha}
+                            <Typography variant="h4" color="success.main" sx={{ fontWeight: 900 }}>
+                                S/ {factura.montoTotal?.toFixed(2)}
                             </Typography>
                         </Box>
-                    </Box>
-                    <Divider sx={{ my: 2 }} />
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Typography variant="body1" color="text.secondary" fontWeight={600}>
-                            MONTO TOTAL
-                        </Typography>
-                        <Typography variant="h4" sx={{ fontWeight: 900, color: 'success.main' }}>
-                            S/ {factura.montoTotal?.toFixed(2)}
-                        </Typography>
                     </Box>
                 </Paper>
 
                 <Grid container spacing={3}>
                     <Grid item xs={12} md={6}>
                         <DetailItem
-                            icon={Description}
+                            icon={Receipt}
                             label="NÚMERO DE FACTURA"
                             value={factura.numeroFactura}
                             color="primary"
@@ -112,8 +129,17 @@ const FacturaDetail = ({ open, onClose, factura }) => {
 
                     <Grid item xs={12} md={6}>
                         <DetailItem
+                            icon={Person}
+                            label="PACIENTE"
+                            value={nombrePaciente}
+                            color="secondary"
+                        />
+                    </Grid>
+
+                    <Grid item xs={12} md={6}>
+                        <DetailItem
                             icon={CalendarMonth}
-                            label="FECHA"
+                            label="FECHA DE EMISIÓN"
                             value={factura.fecha}
                             color="info"
                         />
@@ -121,28 +147,19 @@ const FacturaDetail = ({ open, onClose, factura }) => {
 
                     <Grid item xs={12} md={6}>
                         <DetailItem
-                            icon={Person}
-                            label="PACIENTE"
-                            value={factura.idPaciente}
-                            color="secondary"
+                            icon={AttachMoney}
+                            label="MONTO TOTAL"
+                            value={`S/ ${factura.montoTotal?.toFixed(2)}`}
+                            color="success"
                         />
                     </Grid>
 
                     <Grid item xs={12} md={6}>
                         <DetailItem
-                            icon={Payment}
+                            icon={CreditCard}
                             label="MÉTODO DE PAGO"
                             value={factura.metodoPago}
                             color="warning"
-                        />
-                    </Grid>
-
-                    <Grid item xs={12}>
-                        <DetailItem
-                            icon={AttachMoney}
-                            label="MONTO TOTAL"
-                            value={`S/ ${factura.montoTotal?.toFixed(2)}`}
-                            color="success"
                         />
                     </Grid>
                 </Grid>
@@ -177,11 +194,8 @@ const FacturaDetail = ({ open, onClose, factura }) => {
             </DialogContent>
 
             <DialogActions sx={{ px: 3, py: 2 }}>
-                <Button onClick={onClose} variant="outlined">
+                <Button onClick={onClose} variant="contained">
                     Cerrar
-                </Button>
-                <Button variant="contained" color="success">
-                    Imprimir Factura
                 </Button>
             </DialogActions>
         </Dialog>
