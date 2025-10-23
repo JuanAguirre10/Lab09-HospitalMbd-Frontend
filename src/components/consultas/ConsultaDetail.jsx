@@ -11,10 +11,28 @@ import {
     Grid,
     IconButton,
     Paper,
+    Chip,
+    List,
+    ListItem,
+    ListItemText,
+    CircularProgress,
 } from '@mui/material';
-import { Close, Person, LocalHospital, CalendarMonth, AccessTime, Description, Notes } from '@mui/icons-material';
+import { 
+    Close, 
+    Person, 
+    LocalHospital, 
+    CalendarMonth, 
+    AccessTime, 
+    Description, 
+    Notes,
+    Medication,
+    HealthAndSafety,
+} from '@mui/icons-material';
 import { getPacienteById } from '../../services/pacienteService';
 import { getMedicoById } from '../../services/medicoService';
+import { getDiagnosticosByConsulta } from '../../services/diagnosticoService';
+import { getRecetasByConsulta } from '../../services/recetaService';
+import { getDetallesRecetaByReceta } from '../../services/detalleRecetaService';
 
 const DetailItem = ({ icon: Icon, label, value, color = 'primary' }) => (
     <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
@@ -45,6 +63,10 @@ const DetailItem = ({ icon: Icon, label, value, color = 'primary' }) => (
 const ConsultaDetail = ({ open, onClose, consulta }) => {
     const [paciente, setPaciente] = useState(null);
     const [medico, setMedico] = useState(null);
+    const [diagnosticos, setDiagnosticos] = useState([]);
+    const [recetas, setRecetas] = useState([]);
+    const [detallesRecetas, setDetallesRecetas] = useState({});
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (consulta && open) {
@@ -55,16 +77,37 @@ const ConsultaDetail = ({ open, onClose, consulta }) => {
     const loadData = async () => {
         if (!consulta) return;
         
+        setLoading(true);
         try {
-            const [pacienteRes, medicoRes] = await Promise.all([
+            const [pacienteRes, medicoRes, diagnosticosRes, recetasRes] = await Promise.all([
                 getPacienteById(consulta.idPaciente).catch(() => null),
                 getMedicoById(consulta.idMedico).catch(() => null),
+                getDiagnosticosByConsulta(consulta.id).catch(() => ({ data: [] })),
+                getRecetasByConsulta(consulta.id).catch(() => ({ data: [] })),
             ]);
             
             setPaciente(pacienteRes?.data);
             setMedico(medicoRes?.data);
+            setDiagnosticos(diagnosticosRes.data || []);
+            setRecetas(recetasRes.data || []);
+
+            // Cargar detalles de cada receta
+            if (recetasRes.data && recetasRes.data.length > 0) {
+                const detallesPromises = recetasRes.data.map(receta => 
+                    getDetallesRecetaByReceta(receta.id).catch(() => ({ data: [] }))
+                );
+                const detallesResults = await Promise.all(detallesPromises);
+                
+                const detallesMap = {};
+                recetasRes.data.forEach((receta, index) => {
+                    detallesMap[receta.id] = detallesResults[index].data || [];
+                });
+                setDetallesRecetas(detallesMap);
+            }
         } catch (error) {
             console.error('Error cargando datos:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -79,10 +122,10 @@ const ConsultaDetail = ({ open, onClose, consulta }) => {
         : consulta.nombreMedico || consulta.idMedico;
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+        <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
             <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 2 }}>
                 <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                    Detalle de la Consulta
+                    Detalle de la Consulta Médica
                 </Typography>
                 <IconButton onClick={onClose}>
                     <Close />
@@ -105,6 +148,7 @@ const ConsultaDetail = ({ open, onClose, consulta }) => {
                 </Paper>
 
                 <Grid container spacing={3}>
+                    {/* Información básica */}
                     <Grid item xs={12} md={6}>
                         <DetailItem
                             icon={Person}
@@ -162,19 +206,148 @@ const ConsultaDetail = ({ open, onClose, consulta }) => {
 
                 <Divider sx={{ my: 3 }} />
 
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
-                    Información del Sistema
-                </Typography>
-
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 2, bgcolor: 'background.default', borderRadius: 1 }}>
-                        <Typography variant="body2" color="text.secondary" fontWeight={600}>
-                            ID de la Consulta
+                {/* Diagnósticos */}
+                <Box sx={{ mb: 3 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                        <HealthAndSafety sx={{ color: 'error.main', fontSize: 28 }} />
+                        <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                            Diagnósticos
                         </Typography>
-                        <Typography variant="body2" fontWeight={500}>
-                            {consulta.id}
-                        </Typography>
+                        <Chip label={diagnosticos.length} color="error" size="small" />
                     </Box>
+
+                    {loading ? (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+                            <CircularProgress />
+                        </Box>
+                    ) : diagnosticos.length > 0 ? (
+                        <List>
+                            {diagnosticos.map((diagnostico, index) => (
+                                <ListItem 
+                                    key={diagnostico.id}
+                                    sx={{ 
+                                        bgcolor: 'error.lighter', 
+                                        borderRadius: 2, 
+                                        mb: 1,
+                                        border: '2px solid',
+                                        borderColor: 'error.light',
+                                    }}
+                                >
+                                    <ListItemText
+                                        primary={
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                <Typography variant="body1" sx={{ fontWeight: 700 }}>
+                                                    Diagnóstico {index + 1}
+                                                </Typography>
+                                                <Chip 
+                                                    label={diagnostico.tipo} 
+                                                    size="small" 
+                                                    color="error"
+                                                    sx={{ textTransform: 'capitalize' }}
+                                                />
+                                            </Box>
+                                        }
+                                        secondary={
+                                            <Typography variant="body2" sx={{ mt: 1 }}>
+                                                {diagnostico.descripcion}
+                                            </Typography>
+                                        }
+                                    />
+                                </ListItem>
+                            ))}
+                        </List>
+                    ) : (
+                        <Paper sx={{ p: 3, textAlign: 'center', bgcolor: 'grey.100' }}>
+                            <Typography color="text.secondary">
+                                No hay diagnósticos registrados para esta consulta
+                            </Typography>
+                        </Paper>
+                    )}
+                </Box>
+
+                <Divider sx={{ my: 3 }} />
+
+                {/* Recetas Médicas */}
+                <Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                        <Medication sx={{ color: 'success.main', fontSize: 28 }} />
+                        <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                            Recetas Médicas
+                        </Typography>
+                        <Chip label={recetas.length} color="success" size="small" />
+                    </Box>
+
+                    {loading ? (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+                            <CircularProgress />
+                        </Box>
+                    ) : recetas.length > 0 ? (
+                        recetas.map((receta, index) => (
+                            <Paper 
+                                key={receta.id} 
+                                sx={{ 
+                                    p: 3, 
+                                    mb: 2,
+                                    bgcolor: 'success.lighter',
+                                    border: '2px solid',
+                                    borderColor: 'success.light',
+                                }}
+                            >
+                                <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
+                                    📋 Receta Médica {index + 1}
+                                </Typography>
+                                
+                                <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontWeight: 600 }}>
+                                    <strong>Indicaciones:</strong> {receta.indicaciones}
+                                </Typography>
+
+                                {detallesRecetas[receta.id] && detallesRecetas[receta.id].length > 0 && (
+                                    <Box sx={{ mt: 2 }}>
+                                        <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
+                                            💊 Medicamentos:
+                                        </Typography>
+                                        <List dense>
+                                            {detallesRecetas[receta.id].map((detalle) => (
+                                                <ListItem 
+                                                    key={detalle.id}
+                                                    sx={{ 
+                                                        bgcolor: 'white', 
+                                                        borderRadius: 1, 
+                                                        mb: 1,
+                                                        border: '1px solid',
+                                                        borderColor: 'success.main',
+                                                    }}
+                                                >
+                                                    <ListItemText
+                                                        primary={
+                                                            <Typography variant="body1" sx={{ fontWeight: 700 }}>
+                                                                {detalle.medicamento}
+                                                            </Typography>
+                                                        }
+                                                        secondary={
+                                                            <Box sx={{ mt: 0.5 }}>
+                                                                <Typography variant="body2">
+                                                                    <strong>Dosis:</strong> {detalle.dosis} | 
+                                                                    <strong> Frecuencia:</strong> {detalle.frecuencia} | 
+                                                                    <strong> Duración:</strong> {detalle.duracion}
+                                                                </Typography>
+                                                            </Box>
+                                                        }
+                                                    />
+                                                </ListItem>
+                                            ))}
+                                        </List>
+                                    </Box>
+                                )}
+                            </Paper>
+                        ))
+                    ) : (
+                        <Paper sx={{ p: 3, textAlign: 'center', bgcolor: 'grey.100' }}>
+                            <Typography color="text.secondary">
+                                No hay recetas médicas registradas para esta consulta
+                            </Typography>
+                        </Paper>
+                    )}
                 </Box>
             </DialogContent>
 

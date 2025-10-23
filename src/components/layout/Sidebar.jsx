@@ -9,7 +9,8 @@ import {
     Hotel, 
     Receipt, 
     AccountCircle ,
-    MeetingRoom
+    MeetingRoom,
+    HealthAndSafety
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -21,6 +22,7 @@ const menuItems = [
     { text: 'Médicos', icon: <LocalHospital />, path: '/medicos' },
     { text: 'Citas', icon: <CalendarMonth />, path: '/citas' },
     { text: 'Consultas', icon: <Description />, path: '/consultas' },
+    { text: 'Diagnósticos', icon: <HealthAndSafety />, path: '/diagnosticos' },
     { text: 'Habitaciones', icon: <MeetingRoom />, path: '/habitaciones' },
     { text: 'Hospitalización', icon: <Hotel />, path: '/hospitalizacion' },
     { text: 'Facturación', icon: <Receipt />, path: '/facturacion' },

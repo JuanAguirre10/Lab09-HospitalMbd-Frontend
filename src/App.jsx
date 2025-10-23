@@ -13,6 +13,7 @@ import HabitacionesPage from './pages/HabitacionesPage';
 import FacturacionPage from './pages/FacturacionPage';
 import UsuariosPage from './pages/UsuariosPage';
 import NotFound from './pages/NotFound';
+import DiagnosticosPage from './pages/DiagnosticosPage';
 
 function App() {
   return (
@@ -32,6 +33,11 @@ function App() {
               <PacientesPage />
             </PrivateRoute>
           } />
+          <Route path="/diagnosticos" element={
+  <PrivateRoute>
+    <DiagnosticosPage />
+  </PrivateRoute>
+} />
 
           <Route path="/medicos" element={
             <PrivateRoute>
