@@ -9,6 +9,7 @@ import MedicosPage from './pages/MedicosPage';
 import CitasPage from './pages/CitasPage';
 import ConsultasPage from './pages/ConsultasPage';
 import HospitalizacionPage from './pages/HospitalizacionPage';
+import FacturacionPage from './pages/FacturacionPage';
 import NotFound from './pages/NotFound';
 
 function App() {
@@ -51,6 +52,12 @@ function App() {
           <Route path="/hospitalizacion" element={
             <PrivateRoute>
               <HospitalizacionPage />
+            </PrivateRoute>
+          } />
+
+          <Route path="/facturacion" element={
+            <PrivateRoute>
+              <FacturacionPage />
             </PrivateRoute>
           } />
 
