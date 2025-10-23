@@ -5,6 +5,7 @@ import PrivateRoute from './utils/PrivateRoute';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import PacientesPage from './pages/PacientesPage';
+import MedicosPage from './pages/MedicosPage';
 import NotFound from './pages/NotFound';
 
 function App() {
@@ -23,6 +24,12 @@ function App() {
           <Route path="/pacientes" element={
             <PrivateRoute>
               <PacientesPage />
+            </PrivateRoute>
+          } />
+
+          <Route path="/medicos" element={
+            <PrivateRoute>
+              <MedicosPage />
             </PrivateRoute>
           } />
 
