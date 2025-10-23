@@ -101,21 +101,6 @@ const Login = () => {
                         <Typography variant="h6" sx={{ fontWeight: 400, opacity: 0.9, lineHeight: 1.6, maxWidth: 500 }}>
                             Plataforma integral para la gestión eficiente de pacientes, citas médicas, consultas y facturación hospitalaria.
                         </Typography>
-
-                        <Box sx={{ display: 'flex', gap: 4, mt: 4 }}>
-                            <Box>
-                                <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>10K+</Typography>
-                                <Typography variant="body2" sx={{ opacity: 0.8 }}>Pacientes registrados</Typography>
-                            </Box>
-                            <Box>
-                                <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>500+</Typography>
-                                <Typography variant="body2" sx={{ opacity: 0.8 }}>Médicos activos</Typography>
-                            </Box>
-                            <Box>
-                                <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>99.9%</Typography>
-                                <Typography variant="body2" sx={{ opacity: 0.8 }}>Uptime garantizado</Typography>
-                            </Box>
-                        </Box>
                     </Box>
 
                     <Box sx={{ flex: { xs: 1, md: 0.5 }, display: 'flex', justifyContent: 'center' }}>
@@ -267,29 +252,6 @@ const Login = () => {
                                 >
                                     {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
                                 </Button>
-
-                                <Typography 
-                                    variant="body2" 
-                                    sx={{ 
-                                        mt: 3, 
-                                        textAlign: 'center',
-                                        color: 'text.secondary',
-                                    }}
-                                >
-                                    ¿Problemas para iniciar sesión? 
-                                    <Typography 
-                                        component="span" 
-                                        sx={{ 
-                                            color: 'primary.main', 
-                                            fontWeight: 600,
-                                            ml: 0.5,
-                                            cursor: 'pointer',
-                                            '&:hover': { textDecoration: 'underline' },
-                                        }}
-                                    >
-                                        Contactar soporte
-                                    </Typography>
-                                </Typography>
                             </Box>
                         </Card>
                     </Box>

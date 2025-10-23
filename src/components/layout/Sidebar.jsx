@@ -1,5 +1,5 @@
 import React from 'react';
-import { Drawer, List, ListItem, ListItemIcon, ListItemText, ListItemButton, Divider, Toolbar, Box } from '@mui/material';
+import { Drawer, List, ListItem, ListItemIcon, ListItemText, ListItemButton, Toolbar, Box } from '@mui/material';
 import { 
     Dashboard, 
     People, 
@@ -12,7 +12,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-const drawerWidth = 240;
+const drawerWidth = 280;
 
 const menuItems = [
     { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
@@ -25,15 +25,12 @@ const menuItems = [
     { text: 'Usuarios', icon: <AccountCircle />, path: '/usuarios' },
 ];
 
-const Sidebar = ({ open, onClose }) => {
+const Sidebar = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
     const handleNavigation = (path) => {
         navigate(path);
-        if (window.innerWidth < 600) {
-            onClose();
-        }
     };
 
     return (
@@ -45,27 +42,57 @@ const Sidebar = ({ open, onClose }) => {
                 '& .MuiDrawer-paper': {
                     width: drawerWidth,
                     boxSizing: 'border-box',
+                    bgcolor: 'white',
+                    borderRight: '1px solid',
+                    borderColor: 'divider',
                 },
             }}
         >
-            <Toolbar />
-            <Box sx={{ overflow: 'auto' }}>
-                <List>
+            <Toolbar sx={{ minHeight: 80 }} />
+            <Box sx={{ overflow: 'auto', px: 2, py: 3 }}>
+                <List sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                     {menuItems.map((item) => (
                         <ListItem key={item.text} disablePadding>
                             <ListItemButton
                                 selected={location.pathname === item.path}
                                 onClick={() => handleNavigation(item.path)}
+                                sx={{
+                                    borderRadius: 2,
+                                    py: 1.5,
+                                    '&.Mui-selected': {
+                                        bgcolor: 'primary.main',
+                                        color: 'white',
+                                        '&:hover': {
+                                            bgcolor: 'primary.dark',
+                                        },
+                                        '& .MuiListItemIcon-root': {
+                                            color: 'white',
+                                        },
+                                    },
+                                    '&:hover': {
+                                        bgcolor: 'action.hover',
+                                    },
+                                }}
                             >
-                                <ListItemIcon>
+                                <ListItemIcon
+                                    sx={{
+                                        minWidth: 40,
+                                        color: location.pathname === item.path ? 'white' : 'text.secondary',
+                                    }}
+                                >
                                     {item.icon}
                                 </ListItemIcon>
-                                <ListItemText primary={item.text} />
+                                <ListItemText 
+                                    primary={item.text}
+                                    primaryTypographyProps={{
+                                        fontWeight: location.pathname === item.path ? 700 : 500,
+                                        fontSize: '0.95rem',
+                                    }}
+                                />
                             </ListItemButton>
                         </ListItem>
                     ))}
                 </List>
-                <Divider />
             </Box>
         </Drawer>
     );
