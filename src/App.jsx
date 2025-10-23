@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import PacientesPage from './pages/PacientesPage';
 import MedicosPage from './pages/MedicosPage';
 import CitasPage from './pages/CitasPage';
+import ConsultasPage from './pages/ConsultasPage';
 import NotFound from './pages/NotFound';
 
 function App() {
@@ -37,6 +38,12 @@ function App() {
           <Route path="/citas" element={
             <PrivateRoute>
               <CitasPage />
+            </PrivateRoute>
+          } />
+
+          <Route path="/consultas" element={
+            <PrivateRoute>
+              <ConsultasPage />
             </PrivateRoute>
           } />
 
