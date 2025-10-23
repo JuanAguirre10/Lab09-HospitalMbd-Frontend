@@ -1,6 +1,11 @@
 import api from './api';
 
-export const getAllCitas = () => api.get('/citas');
+export const getAllCitas = () => {
+    return api.get('/citas').catch(error => {
+        console.error('Error detallado en getAllCitas:', error.response || error);
+        return { data: [] };
+    });
+};
 
 export const getCitaById = (id) => api.get(`/citas/${id}`);
 

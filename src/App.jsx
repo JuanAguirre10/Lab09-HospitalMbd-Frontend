@@ -6,6 +6,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import PacientesPage from './pages/PacientesPage';
 import MedicosPage from './pages/MedicosPage';
+import CitasPage from './pages/CitasPage';
 import NotFound from './pages/NotFound';
 
 function App() {
@@ -30,6 +31,12 @@ function App() {
           <Route path="/medicos" element={
             <PrivateRoute>
               <MedicosPage />
+            </PrivateRoute>
+          } />
+
+          <Route path="/citas" element={
+            <PrivateRoute>
+              <CitasPage />
             </PrivateRoute>
           } />
 
