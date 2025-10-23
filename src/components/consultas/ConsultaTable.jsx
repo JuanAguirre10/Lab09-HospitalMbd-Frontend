@@ -63,8 +63,8 @@ const ConsultaTable = ({ consultas, loading, onEdit, onDelete, onView }) => {
                         >
                             <TableCell sx={{ fontWeight: 600 }}>{consulta.fecha}</TableCell>
                             <TableCell>{consulta.hora}</TableCell>
-                            <TableCell>{consulta.idPaciente}</TableCell>
-                            <TableCell>{consulta.idMedico}</TableCell>
+                            <TableCell>{consulta.nombrePaciente}</TableCell>
+                            <TableCell>{consulta.nombreMedico}</TableCell>
                             <TableCell>{consulta.motivoConsulta}</TableCell>
                             <TableCell>{consulta.observaciones}</TableCell>
                             <TableCell align="center">

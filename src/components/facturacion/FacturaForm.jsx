@@ -19,11 +19,9 @@ import { toast } from 'react-toastify';
 
 const FacturaForm = ({ open, onClose, onSuccess, factura, mode }) => {
     const [formData, setFormData] = useState({
-        numeroFactura: '',
         idPaciente: '',
         fecha: '',
         montoTotal: 0,
-        metodoPago: '',
         estado: 'pendiente',
     });
     const [pacientes, setPacientes] = useState([]);
@@ -37,14 +35,17 @@ const FacturaForm = ({ open, onClose, onSuccess, factura, mode }) => {
 
     useEffect(() => {
         if (factura && mode === 'edit') {
-            setFormData(factura);
+            setFormData({
+                idPaciente: factura.idPaciente,
+                fecha: factura.fecha,
+                montoTotal: factura.montoTotal,
+                estado: factura.estado,
+            });
         } else {
             setFormData({
-                numeroFactura: '',
                 idPaciente: '',
                 fecha: '',
                 montoTotal: 0,
-                metodoPago: '',
                 estado: 'pendiente',
             });
         }
@@ -87,7 +88,7 @@ const FacturaForm = ({ open, onClose, onSuccess, factura, mode }) => {
     };
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+        <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
             <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 2 }}>
                 <Box>
                     <span style={{ fontSize: '1.5rem', fontWeight: 700 }}>
@@ -102,30 +103,6 @@ const FacturaForm = ({ open, onClose, onSuccess, factura, mode }) => {
             <form onSubmit={handleSubmit}>
                 <DialogContent dividers>
                     <Grid container spacing={3}>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                fullWidth
-                                label="Número de Factura"
-                                name="numeroFactura"
-                                value={formData.numeroFactura}
-                                onChange={handleChange}
-                                required
-                            />
-                        </Grid>
-
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                fullWidth
-                                label="Fecha"
-                                name="fecha"
-                                type="date"
-                                value={formData.fecha}
-                                onChange={handleChange}
-                                InputLabelProps={{ shrink: true }}
-                                required
-                            />
-                        </Grid>
-
                         <Grid item xs={12}>
                             <Autocomplete
                                 options={pacientes}
@@ -140,7 +117,20 @@ const FacturaForm = ({ open, onClose, onSuccess, factura, mode }) => {
                             />
                         </Grid>
 
-                        <Grid item xs={12} sm={6}>
+                        <Grid item xs={12}>
+                            <TextField
+                                fullWidth
+                                label="Fecha de Emisión"
+                                name="fecha"
+                                type="date"
+                                value={formData.fecha}
+                                onChange={handleChange}
+                                InputLabelProps={{ shrink: true }}
+                                required
+                            />
+                        </Grid>
+
+                        <Grid item xs={12}>
                             <TextField
                                 fullWidth
                                 label="Monto Total"
@@ -155,24 +145,7 @@ const FacturaForm = ({ open, onClose, onSuccess, factura, mode }) => {
                             />
                         </Grid>
 
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                fullWidth
-                                select
-                                label="Método de Pago"
-                                name="metodoPago"
-                                value={formData.metodoPago}
-                                onChange={handleChange}
-                                required
-                            >
-                                <MenuItem value="efectivo">Efectivo</MenuItem>
-                                <MenuItem value="tarjeta">Tarjeta</MenuItem>
-                                <MenuItem value="transferencia">Transferencia</MenuItem>
-                                <MenuItem value="seguro">Seguro</MenuItem>
-                            </TextField>
-                        </Grid>
-
-                        <Grid item xs={12} sm={6}>
+                        <Grid item xs={12}>
                             <TextField
                                 fullWidth
                                 select

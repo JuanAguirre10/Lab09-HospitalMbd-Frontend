@@ -13,6 +13,7 @@ import {
 } from '@mui/icons-material';
 import Layout from '../components/layout/Layout';
 import { getAllFacturas, deleteFactura } from '../services/facturaService';
+import { getAllPacientes } from '../services/pacienteService';
 import { toast } from 'react-toastify';
 import FacturaTable from '../components/facturacion/FacturaTable';
 import FacturaForm from '../components/facturacion/FacturaForm';
@@ -29,14 +30,34 @@ const FacturacionPage = () => {
     const [mode, setMode] = useState('create');
 
     useEffect(() => {
-        loadFacturas();
+        loadData();
     }, []);
 
-    const loadFacturas = async () => {
+    const loadData = async () => {
         try {
             setLoading(true);
-            const response = await getAllFacturas();
-            setFacturas(response.data || []);
+            const [facturasRes, pacientesRes] = await Promise.all([
+                getAllFacturas(),
+                getAllPacientes(),
+            ]);
+
+            // Mapear facturas con nombres
+            const facturasConNombres = (facturasRes.data || []).map(f => {
+                const paciente = pacientesRes.data.find(p => p.id === f.idPaciente);
+
+                return {
+                    id: f.id,
+                    numeroFactura: f.id?.substring(0, 8).toUpperCase() || 'N/A',
+                    idPaciente: f.idPaciente,
+                    nombrePaciente: paciente ? `${paciente.nombres} ${paciente.apellidos}` : f.idPaciente,
+                    fecha: f.fechaEmision,
+                    montoTotal: f.total || 0,
+                    estado: f.estado,
+                    metodoPago: 'Efectivo',
+                };
+            });
+
+            setFacturas(facturasConNombres);
         } catch (error) {
             toast.error('Error al cargar facturas');
             setFacturas([]);
@@ -67,7 +88,7 @@ const FacturacionPage = () => {
             try {
                 await deleteFactura(id);
                 toast.success('Factura eliminada exitosamente');
-                loadFacturas();
+                loadData();
             } catch (error) {
                 toast.error('Error al eliminar factura');
             }
@@ -80,13 +101,13 @@ const FacturacionPage = () => {
     };
 
     const handleSuccess = () => {
-        loadFacturas();
+        loadData();
         handleCloseForm();
     };
 
     const filteredFacturas = facturas.filter(f => {
         const matchSearch = 
-            f.idPaciente?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            f.nombrePaciente?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             f.numeroFactura?.toLowerCase().includes(searchTerm.toLowerCase());
         
         const matchEstado = filterEstado === 'todos' || f.estado === filterEstado;

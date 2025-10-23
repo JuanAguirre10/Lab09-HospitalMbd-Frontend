@@ -4,9 +4,27 @@ export const getAllFacturas = () => api.get('/facturas');
 
 export const getFacturaById = (id) => api.get(`/facturas/${id}`);
 
-export const createFactura = (factura) => api.post('/facturas', factura);
+export const createFactura = (factura) => {
+    // Transformar del formato del frontend al backend
+    const facturaBackend = {
+        idPaciente: factura.idPaciente,
+        fechaEmision: factura.fecha,
+        total: parseFloat(factura.montoTotal),
+        estado: factura.estado,
+    };
+    return api.post('/facturas', facturaBackend);
+};
 
-export const updateFactura = (id, factura) => api.put(`/facturas/${id}`, factura);
+export const updateFactura = (id, factura) => {
+    // Transformar del formato del frontend al backend
+    const facturaBackend = {
+        idPaciente: factura.idPaciente,
+        fechaEmision: factura.fecha,
+        total: parseFloat(factura.montoTotal),
+        estado: factura.estado,
+    };
+    return api.put(`/facturas/${id}`, facturaBackend);
+};
 
 export const deleteFactura = (id) => api.delete(`/facturas/${id}`);
 

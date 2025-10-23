@@ -77,8 +77,8 @@ const CitaTable = ({ citas, loading, onEdit, onDelete, onView }) => {
                         >
                             <TableCell sx={{ fontWeight: 600 }}>{cita.fecha}</TableCell>
                             <TableCell>{cita.hora}</TableCell>
-                            <TableCell>{cita.idPaciente}</TableCell>
-                            <TableCell>{cita.idMedico}</TableCell>
+                            <TableCell>{cita.nombrePaciente}</TableCell>
+                            <TableCell>{cita.nombreMedico}</TableCell>
                             <TableCell>{cita.motivo}</TableCell>
                             <TableCell>
                                 <Chip

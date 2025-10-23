@@ -5,7 +5,6 @@ import {
     TextField, 
     InputAdornment,
     Chip,
-    MenuItem,
 } from '@mui/material';
 import { 
     Add, 
@@ -13,6 +12,8 @@ import {
 } from '@mui/icons-material';
 import Layout from '../components/layout/Layout';
 import { getAllHospitalizaciones, deleteHospitalizacion } from '../services/hospitalizacionService';
+import { getAllPacientes } from '../services/pacienteService';
+import { getAllHabitaciones } from '../services/habitacionService';
 import { toast } from 'react-toastify';
 import HospitalizacionTable from '../components/hospitalizacion/HospitalizacionTable';
 import HospitalizacionForm from '../components/hospitalizacion/HospitalizacionForm';
@@ -28,14 +29,39 @@ const HospitalizacionPage = () => {
     const [mode, setMode] = useState('create');
 
     useEffect(() => {
-        loadHospitalizaciones();
+        loadData();
     }, []);
 
-    const loadHospitalizaciones = async () => {
+    const loadData = async () => {
         try {
             setLoading(true);
-            const response = await getAllHospitalizaciones();
-            setHospitalizaciones(response.data || []);
+            const [hospitalizacionesRes, pacientesRes, habitacionesRes] = await Promise.all([
+                getAllHospitalizaciones(),
+                getAllPacientes(),
+                getAllHabitaciones(),
+            ]);
+
+            // Mapear hospitalizaciones con nombres reales
+            const hospitalizacionesConNombres = (hospitalizacionesRes.data || []).map(h => {
+                const paciente = pacientesRes.data.find(p => p.id === h.idPaciente);
+                const habitacion = habitacionesRes.data.find(hab => hab.id === h.idHabitacion);
+
+                return {
+                    id: h.id,
+                    idPaciente: h.idPaciente,
+                    nombrePaciente: paciente ? `${paciente.nombres} ${paciente.apellidos}` : h.idPaciente,
+                    idHabitacion: h.idHabitacion,
+                    numeroHabitacion: habitacion ? habitacion.numero : 'N/A',
+                    tipoHabitacion: habitacion ? habitacion.tipo : 'N/A',
+                    fechaIngreso: h.fechaIngreso,
+                    fechaAlta: h.fechaAlta || null,
+                    motivo: h.diagnosticoIngreso,
+                    diagnostico: h.diagnosticoIngreso,
+                    estado: h.estado || 'activo',
+                };
+            });
+
+            setHospitalizaciones(hospitalizacionesConNombres);
         } catch (error) {
             toast.error('Error al cargar hospitalizaciones');
             setHospitalizaciones([]);
@@ -66,7 +92,7 @@ const HospitalizacionPage = () => {
             try {
                 await deleteHospitalizacion(id);
                 toast.success('Hospitalización eliminada exitosamente');
-                loadHospitalizaciones();
+                loadData();
             } catch (error) {
                 toast.error('Error al eliminar hospitalización');
             }
@@ -79,13 +105,13 @@ const HospitalizacionPage = () => {
     };
 
     const handleSuccess = () => {
-        loadHospitalizaciones();
+        loadData();
         handleCloseForm();
     };
 
     const filteredHospitalizaciones = hospitalizaciones.filter(h => 
-        h.idPaciente?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        h.idHabitacion?.toLowerCase().includes(searchTerm.toLowerCase())
+        h.nombrePaciente?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        h.numeroHabitacion?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (

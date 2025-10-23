@@ -6,7 +6,6 @@ import {
     InputAdornment,
     Chip,
     MenuItem,
-    Alert,
 } from '@mui/material';
 import { 
     Add, 
@@ -14,6 +13,8 @@ import {
 } from '@mui/icons-material';
 import Layout from '../components/layout/Layout';
 import { getAllCitas, deleteCita } from '../services/citaService';
+import { getAllPacientes } from '../services/pacienteService';
+import { getAllMedicos } from '../services/medicoService';
 import { toast } from 'react-toastify';
 import CitaTable from '../components/citas/CitaTable';
 import CitaForm from '../components/citas/CitaForm';
@@ -21,8 +22,9 @@ import CitaDetail from '../components/citas/CitaDetail';
 
 const CitasPage = () => {
     const [citas, setCitas] = useState([]);
+    const [pacientes, setPacientes] = useState([]);
+    const [medicos, setMedicos] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterEstado, setFilterEstado] = useState('todos');
     const [openForm, setOpenForm] = useState(false);
@@ -31,18 +33,36 @@ const CitasPage = () => {
     const [mode, setMode] = useState('create');
 
     useEffect(() => {
-        loadCitas();
+        loadData();
     }, []);
 
-    const loadCitas = async () => {
+    const loadData = async () => {
         try {
             setLoading(true);
-            setError(null);
-            const response = await getAllCitas();
-            setCitas(response.data || []);
+            const [citasRes, pacientesRes, medicosRes] = await Promise.all([
+                getAllCitas(),
+                getAllPacientes(),
+                getAllMedicos(),
+            ]);
+
+            setPacientes(pacientesRes.data || []);
+            setMedicos(medicosRes.data || []);
+
+            // Mapear citas con nombres de pacientes y médicos
+            const citasConNombres = (citasRes.data || []).map(cita => {
+                const paciente = pacientesRes.data.find(p => p.id === cita.idPaciente);
+                const medico = medicosRes.data.find(m => m.id === cita.idMedico);
+
+                return {
+                    ...cita,
+                    nombrePaciente: paciente ? `${paciente.nombres} ${paciente.apellidos}` : cita.idPaciente,
+                    nombreMedico: medico ? `Dr(a). ${medico.nombres} ${medico.apellidos}` : cita.idMedico,
+                };
+            });
+
+            setCitas(citasConNombres);
         } catch (error) {
-            console.error('Error completo:', error);
-            setError('Error al cargar citas. El módulo está en desarrollo.');
+            toast.error('Error al cargar datos');
             setCitas([]);
         } finally {
             setLoading(false);
@@ -71,7 +91,7 @@ const CitasPage = () => {
             try {
                 await deleteCita(id);
                 toast.success('Cita eliminada exitosamente');
-                loadCitas();
+                loadData();
             } catch (error) {
                 toast.error('Error al eliminar cita');
             }
@@ -84,14 +104,14 @@ const CitasPage = () => {
     };
 
     const handleSuccess = () => {
-        loadCitas();
+        loadData();
         handleCloseForm();
     };
 
     const filteredCitas = citas.filter(c => {
         const matchSearch = 
-            c.idPaciente?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            c.idMedico?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            c.nombrePaciente?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            c.nombreMedico?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             c.motivo?.toLowerCase().includes(searchTerm.toLowerCase());
         
         const matchEstado = filterEstado === 'todos' || c.estado === filterEstado;
@@ -129,12 +149,6 @@ const CitasPage = () => {
                     Nueva Cita
                 </Button>
             </Box>
-
-            {error && (
-                <Alert severity="warning" sx={{ mb: 3 }}>
-                    {error}
-                </Alert>
-            )}
 
             <Box sx={{ mb: 3, display: 'flex', gap: 2 }}>
                 <TextField

@@ -74,7 +74,7 @@ const HospitalizacionDetail = ({ open, onClose, hospitalizacion }) => {
                                 Hospitalización
                             </Typography>
                             <Typography variant="body1" color="text.secondary">
-                                Paciente: {hospitalizacion.idPaciente}
+                                Paciente: {hospitalizacion.nombrePaciente}
                             </Typography>
                         </Box>
                     </Box>
@@ -85,7 +85,7 @@ const HospitalizacionDetail = ({ open, onClose, hospitalizacion }) => {
                         <DetailItem
                             icon={Person}
                             label="PACIENTE"
-                            value={hospitalizacion.idPaciente}
+                            value={hospitalizacion.nombrePaciente}
                             color="primary"
                         />
                     </Grid>
@@ -94,7 +94,7 @@ const HospitalizacionDetail = ({ open, onClose, hospitalizacion }) => {
                         <DetailItem
                             icon={Hotel}
                             label="HABITACIÓN"
-                            value={hospitalizacion.idHabitacion}
+                            value={`Habitación ${hospitalizacion.numeroHabitacion}`}
                             color="secondary"
                         />
                     </Grid>
@@ -119,17 +119,8 @@ const HospitalizacionDetail = ({ open, onClose, hospitalizacion }) => {
 
                     <Grid item xs={12}>
                         <DetailItem
-                            icon={Description}
-                            label="MOTIVO DE HOSPITALIZACIÓN"
-                            value={hospitalizacion.motivo}
-                            color="success"
-                        />
-                    </Grid>
-
-                    <Grid item xs={12}>
-                        <DetailItem
                             icon={LocalHospital}
-                            label="DIAGNÓSTICO"
+                            label="DIAGNÓSTICO DE INGRESO"
                             value={hospitalizacion.diagnostico}
                             color="error"
                         />

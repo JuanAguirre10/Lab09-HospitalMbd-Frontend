@@ -11,6 +11,7 @@ import {
     Box,
     CircularProgress,
     Typography,
+    Chip,
 } from '@mui/material';
 import { Edit, Delete, Visibility } from '@mui/icons-material';
 
@@ -43,10 +44,11 @@ const HospitalizacionTable = ({ hospitalizaciones, loading, onEdit, onDelete, on
                     <TableRow>
                         <TableCell>Paciente</TableCell>
                         <TableCell>Habitación</TableCell>
+                        <TableCell>Tipo</TableCell>
                         <TableCell>Fecha Ingreso</TableCell>
                         <TableCell>Fecha Alta</TableCell>
-                        <TableCell>Motivo</TableCell>
                         <TableCell>Diagnóstico</TableCell>
+                        <TableCell>Estado</TableCell>
                         <TableCell align="center">Acciones</TableCell>
                     </TableRow>
                 </TableHead>
@@ -61,12 +63,41 @@ const HospitalizacionTable = ({ hospitalizaciones, loading, onEdit, onDelete, on
                                 },
                             }}
                         >
-                            <TableCell sx={{ fontWeight: 600 }}>{hospitalizacion.idPaciente}</TableCell>
-                            <TableCell>{hospitalizacion.idHabitacion}</TableCell>
+                            <TableCell sx={{ fontWeight: 600 }}>{hospitalizacion.nombrePaciente}</TableCell>
+                            <TableCell>
+                                <Chip 
+                                    label={`Hab. ${hospitalizacion.numeroHabitacion}`}
+                                    color="secondary"
+                                    size="small"
+                                    sx={{ fontWeight: 600 }}
+                                />
+                            </TableCell>
+                            <TableCell>
+                                <Chip 
+                                    label={hospitalizacion.tipoHabitacion}
+                                    color="info"
+                                    size="small"
+                                    variant="outlined"
+                                    sx={{ textTransform: 'capitalize' }}
+                                />
+                            </TableCell>
                             <TableCell>{hospitalizacion.fechaIngreso}</TableCell>
-                            <TableCell>{hospitalizacion.fechaAlta || 'En curso'}</TableCell>
-                            <TableCell>{hospitalizacion.motivo}</TableCell>
+                            <TableCell>
+                                {hospitalizacion.fechaAlta ? (
+                                    hospitalizacion.fechaAlta
+                                ) : (
+                                    <Chip label="En curso" color="warning" size="small" />
+                                )}
+                            </TableCell>
                             <TableCell>{hospitalizacion.diagnostico}</TableCell>
+                            <TableCell>
+                                <Chip
+                                    label={hospitalizacion.estado}
+                                    color={hospitalizacion.fechaAlta ? 'default' : 'error'}
+                                    size="small"
+                                    sx={{ fontWeight: 600, textTransform: 'capitalize' }}
+                                />
+                            </TableCell>
                             <TableCell align="center">
                                 <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
                                     <IconButton

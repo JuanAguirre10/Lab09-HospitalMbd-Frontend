@@ -10,6 +10,7 @@ import {
     Box,
     IconButton,
     Autocomplete,
+    MenuItem,
 } from '@mui/material';
 import { Close } from '@mui/icons-material';
 import { createHospitalizacion, updateHospitalizacion } from '../../services/hospitalizacionService';
@@ -23,8 +24,8 @@ const HospitalizacionForm = ({ open, onClose, onSuccess, hospitalizacion, mode }
         idHabitacion: '',
         fechaIngreso: '',
         fechaAlta: '',
-        motivo: '',
         diagnostico: '',
+        estado: 'activo',
     });
     const [pacientes, setPacientes] = useState([]);
     const [habitaciones, setHabitaciones] = useState([]);
@@ -38,15 +39,22 @@ const HospitalizacionForm = ({ open, onClose, onSuccess, hospitalizacion, mode }
 
     useEffect(() => {
         if (hospitalizacion && mode === 'edit') {
-            setFormData(hospitalizacion);
+            setFormData({
+                idPaciente: hospitalizacion.idPaciente,
+                idHabitacion: hospitalizacion.idHabitacion,
+                fechaIngreso: hospitalizacion.fechaIngreso,
+                fechaAlta: hospitalizacion.fechaAlta || '',
+                diagnostico: hospitalizacion.diagnostico,
+                estado: hospitalizacion.estado || 'activo',
+            });
         } else {
             setFormData({
                 idPaciente: '',
                 idHabitacion: '',
                 fechaIngreso: '',
                 fechaAlta: '',
-                motivo: '',
                 diagnostico: '',
+                estado: 'activo',
             });
         }
     }, [hospitalizacion, mode, open]);
@@ -55,7 +63,7 @@ const HospitalizacionForm = ({ open, onClose, onSuccess, hospitalizacion, mode }
         try {
             const [pacientesRes, habitacionesRes] = await Promise.all([
                 getAllPacientes(),
-                getAllHabitaciones(),
+                getAllHabitaciones().catch(() => ({ data: [] })), // Si no existe el servicio de habitaciones
             ]);
             setPacientes(pacientesRes.data);
             setHabitaciones(habitacionesRes.data);
@@ -122,17 +130,28 @@ const HospitalizacionForm = ({ open, onClose, onSuccess, hospitalizacion, mode }
                         </Grid>
 
                         <Grid item xs={12} sm={6}>
-                            <Autocomplete
-                                options={habitaciones}
-                                getOptionLabel={(option) => `Habitación ${option.numero} - ${option.tipo}`}
-                                value={habitaciones.find(h => h.id === formData.idHabitacion) || null}
-                                onChange={(e, newValue) => {
-                                    setFormData({ ...formData, idHabitacion: newValue?.id || '' });
-                                }}
-                                renderInput={(params) => (
-                                    <TextField {...params} label="Habitación" required />
-                                )}
-                            />
+                            {habitaciones.length > 0 ? (
+                                <Autocomplete
+                                    options={habitaciones}
+                                    getOptionLabel={(option) => `Habitación ${option.numero} - ${option.tipo}`}
+                                    value={habitaciones.find(h => h.id === formData.idHabitacion) || null}
+                                    onChange={(e, newValue) => {
+                                        setFormData({ ...formData, idHabitacion: newValue?.id || '' });
+                                    }}
+                                    renderInput={(params) => (
+                                        <TextField {...params} label="Habitación" required />
+                                    )}
+                                />
+                            ) : (
+                                <TextField
+                                    fullWidth
+                                    label="ID Habitación"
+                                    name="idHabitacion"
+                                    value={formData.idHabitacion}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            )}
                         </Grid>
 
                         <Grid item xs={12} sm={6}>
@@ -157,26 +176,14 @@ const HospitalizacionForm = ({ open, onClose, onSuccess, hospitalizacion, mode }
                                 value={formData.fechaAlta}
                                 onChange={handleChange}
                                 InputLabelProps={{ shrink: true }}
+                                helperText="Opcional - Dejar vacío si está en curso"
                             />
                         </Grid>
 
                         <Grid item xs={12}>
                             <TextField
                                 fullWidth
-                                label="Motivo de Hospitalización"
-                                name="motivo"
-                                value={formData.motivo}
-                                onChange={handleChange}
-                                multiline
-                                rows={2}
-                                required
-                            />
-                        </Grid>
-
-                        <Grid item xs={12}>
-                            <TextField
-                                fullWidth
-                                label="Diagnóstico"
+                                label="Diagnóstico de Ingreso"
                                 name="diagnostico"
                                 value={formData.diagnostico}
                                 onChange={handleChange}
@@ -184,6 +191,22 @@ const HospitalizacionForm = ({ open, onClose, onSuccess, hospitalizacion, mode }
                                 rows={3}
                                 required
                             />
+                        </Grid>
+
+                        <Grid item xs={12} sm={6}>
+                            <TextField
+                                fullWidth
+                                select
+                                label="Estado"
+                                name="estado"
+                                value={formData.estado}
+                                onChange={handleChange}
+                                required
+                            >
+                                <MenuItem value="activo">Activo</MenuItem>
+                                <MenuItem value="alta">Alta</MenuItem>
+                                <MenuItem value="transferido">Transferido</MenuItem>
+                            </TextField>
                         </Grid>
                     </Grid>
                 </DialogContent>

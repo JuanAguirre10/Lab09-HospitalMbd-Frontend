@@ -13,6 +13,8 @@ import {
 } from '@mui/icons-material';
 import Layout from '../components/layout/Layout';
 import { getAllConsultas, deleteConsulta } from '../services/consultaService';
+import { getAllPacientes } from '../services/pacienteService';
+import { getAllMedicos } from '../services/medicoService';
 import { toast } from 'react-toastify';
 import ConsultaTable from '../components/consultas/ConsultaTable';
 import ConsultaForm from '../components/consultas/ConsultaForm';
@@ -28,14 +30,31 @@ const ConsultasPage = () => {
     const [mode, setMode] = useState('create');
 
     useEffect(() => {
-        loadConsultas();
+        loadData();
     }, []);
 
-    const loadConsultas = async () => {
+    const loadData = async () => {
         try {
             setLoading(true);
-            const response = await getAllConsultas();
-            setConsultas(response.data || []);
+            const [consultasRes, pacientesRes, medicosRes] = await Promise.all([
+                getAllConsultas(),
+                getAllPacientes(),
+                getAllMedicos(),
+            ]);
+
+            // Mapear consultas con nombres
+            const consultasConNombres = (consultasRes.data || []).map(consulta => {
+                const paciente = pacientesRes.data.find(p => p.id === consulta.idPaciente);
+                const medico = medicosRes.data.find(m => m.id === consulta.idMedico);
+
+                return {
+                    ...consulta,
+                    nombrePaciente: paciente ? `${paciente.nombres} ${paciente.apellidos}` : consulta.idPaciente,
+                    nombreMedico: medico ? `Dr(a). ${medico.nombres} ${medico.apellidos}` : consulta.idMedico,
+                };
+            });
+
+            setConsultas(consultasConNombres);
         } catch (error) {
             toast.error('Error al cargar consultas');
             setConsultas([]);
@@ -66,7 +85,7 @@ const ConsultasPage = () => {
             try {
                 await deleteConsulta(id);
                 toast.success('Consulta eliminada exitosamente');
-                loadConsultas();
+                loadData();
             } catch (error) {
                 toast.error('Error al eliminar consulta');
             }
@@ -79,13 +98,13 @@ const ConsultasPage = () => {
     };
 
     const handleSuccess = () => {
-        loadConsultas();
+        loadData();
         handleCloseForm();
     };
 
     const filteredConsultas = consultas.filter(c => 
-        c.idPaciente?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.idMedico?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        c.nombrePaciente?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        c.nombreMedico?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         c.motivoConsulta?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 

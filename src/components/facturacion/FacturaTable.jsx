@@ -16,12 +16,14 @@ import {
 import { Edit, Delete, Visibility } from '@mui/icons-material';
 
 const getEstadoColor = (estado) => {
-    switch (estado) {
+    switch (estado?.toLowerCase()) {
         case 'pendiente':
             return 'warning';
         case 'pagada':
+        case 'pagado':
             return 'success';
         case 'anulada':
+        case 'anulado':
             return 'error';
         default:
             return 'default';
@@ -77,7 +79,7 @@ const FacturaTable = ({ facturas, loading, onEdit, onDelete, onView }) => {
                         >
                             <TableCell sx={{ fontWeight: 600 }}>{factura.numeroFactura}</TableCell>
                             <TableCell>{factura.fecha}</TableCell>
-                            <TableCell>{factura.idPaciente}</TableCell>
+                            <TableCell>{factura.nombrePaciente}</TableCell>
                             <TableCell sx={{ fontWeight: 600, color: 'success.main' }}>
                                 S/ {factura.montoTotal?.toFixed(2)}
                             </TableCell>
